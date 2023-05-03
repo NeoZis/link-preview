@@ -1,7 +1,7 @@
 package LinkPreview
 
 import (
-	"github.com/Junzki/link-preview/handlers"
+	"github.com/NeoZis/link-preview/handlers"
 	"net/http"
 )
 

@@ -1,7 +1,7 @@
 package tests
 
 import (
-	LinkPreview "github.com/Junzki/link-preview"
+	LinkPreview "github.com/NeoZis/link-preview"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"testing"

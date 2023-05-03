@@ -2,7 +2,7 @@ package tests
 
 import (
 	"fmt"
-	"github.com/Junzki/link-preview/handlers"
+	"github.com/NeoZis/link-preview/handlers"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"net/http"

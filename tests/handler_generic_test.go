@@ -1,7 +1,7 @@
 package tests
 
 import (
-	"github.com/Junzki/link-preview/handlers"
+	"github.com/NeoZis/link-preview/handlers"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )

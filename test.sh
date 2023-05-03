@@ -3,7 +3,7 @@
 set -e
 echo "" > coverage.txt
 
-PACKAGE_NAME="github.com/Junzki/link-preview,github.com/Junzki/link-preview/handlers"
+PACKAGE_NAME="github.com/NeoZis/link-preview,github.com/NeoZis/link-preview/handlers"
 
 for d in $(go list ./... | grep -v vendor); do
     go test -race -coverprofile=profile.out -covermode=atomic -coverpkg=${PACKAGE_NAME} "$d"

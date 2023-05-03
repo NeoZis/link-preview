@@ -1,4 +1,4 @@
-module github.com/Junzki/link-preview
+module github.com/NeoZis/link-preview
 
 go 1.12
 
