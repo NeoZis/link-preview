@@ -100,9 +100,14 @@ func (p *LinkPreviewContext) parseFavicon(node *html.Node) {
 		return
 	}
 
-	if strings.HasPrefix("http://", link) || strings.HasPrefix("https://", link) {
-		p.ImageURL = link
-		return
+	if "" == p.ImageURL {
+		p.ImageURL = p.prepareLink(link)
+	}
+}
+
+func (p *LinkPreviewContext) prepareLink(link string) string {
+	if strings.HasPrefix(link, "http://") || strings.HasPrefix(link, "https://") {
+		return link
 	}
 
 	parsedURL, _ := url.Parse(p.Link)
@@ -113,9 +118,6 @@ func (p *LinkPreviewContext) parseFavicon(node *html.Node) {
 	}
 
 	link = joinedURL.String()
-	if "" == p.ImageURL {
-		p.ImageURL = link
-	}
+
+	return link
 }
-
-

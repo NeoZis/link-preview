@@ -31,23 +31,6 @@ func (p *StandardLinkPreview) readTags() error {
 		return errors.New("title not found")
 	}
 	p.Title = titleNode.Text()
-
-	// Find `favicon.ico`.
-	linkNodes := p.Parsed.Find("html > head > link")
-	for _, node := range linkNodes.Nodes {
-		for _, attr := range node.Attr {
-			switch strings.ToLower(attr.Key) {
-			case "rel":
-				if attr.Val != "icon" {
-					break
-				}
-				p.parseFavicon(node)
-			default:
-				continue
-			}
-		}
-	}
-
 	// Parse <meta> tags.
 	metaNodes := p.Parsed.Find("html > head > meta")
 	for _, node := range metaNodes.Nodes {
@@ -56,12 +39,34 @@ func (p *StandardLinkPreview) readTags() error {
 			case "property":
 				p.parseMetaProperties(attr.Val, node)
 				break
+			case "itemprop":
+				if "image" == strings.ToLower(attr.Val) && "" == p.ImageURL {
+					content := p.parseMetaContent(node)
+					p.ImageURL = p.prepareLink(content)
+					break
+				}
 			case "name":
 				if "description" == strings.ToLower(attr.Val) && "" == p.Description {
 					content := p.parseMetaContent(node)
 					p.Description = content
 					break
 				}
+			default:
+				continue
+			}
+		}
+	}
+
+	// Find `favicon.ico`.
+	linkNodes := p.Parsed.Find("html > head > link")
+	for _, node := range linkNodes.Nodes {
+		for _, attr := range node.Attr {
+			switch strings.ToLower(attr.Key) {
+			case "rel":
+				if attr.Val != "icon" && attr.Val != "apple-touch-icon-precomposed" {
+					break
+				}
+				p.parseFavicon(node)
 			default:
 				continue
 			}
@@ -88,7 +93,8 @@ func (p *StandardLinkPreview) parseMetaContent(node *html.Node) string {
 
 func (p *StandardLinkPreview) parseMetaProperties(nodeType string, node *html.Node) {
 	nodeType = strings.ToLower(nodeType)
-	if ! strings.HasPrefix(nodeType, "og:") {
+
+	if !strings.HasPrefix(nodeType, "og:") {
 		return
 	}
 
@@ -104,7 +110,7 @@ func (p *StandardLinkPreview) parseMetaProperties(nodeType string, node *html.No
 	case "description":
 		p.Description = content
 	case "image":
-		p.ImageURL = content
+		p.ImageURL = p.prepareLink(content)
 	case "title":
 		p.Title = content
 	}

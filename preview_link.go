@@ -11,7 +11,7 @@ func Preview(link string, extraContent *http.Request) (*handlers.LinkPreviewCont
 
 func PreviewLink(link string, extraClient *http.Request) (*handlers.LinkPreviewContext, error) {
 	cxt := &handlers.LinkPreviewContext{
-		Link: link,
+		Link:       link,
 		TargetType: handlers.StandardMetaTags,
 	}
 
