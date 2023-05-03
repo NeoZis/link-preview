@@ -2,8 +2,9 @@ package handlers
 
 import (
 	"errors"
-	"golang.org/x/net/html"
 	"strings"
+
+	"golang.org/x/net/html"
 )
 
 type StandardLinkPreview struct {
@@ -42,7 +43,10 @@ func (p *StandardLinkPreview) readTags() error {
 			case "itemprop":
 				if "image" == strings.ToLower(attr.Val) && "" == p.ImageURL {
 					content := p.parseMetaContent(node)
-					p.ImageURL = p.prepareLink(content)
+					if preparedLink := p.prepareLink(content); "" != preparedLink && p.checkAccessToLink(preparedLink) {
+						p.ImageURL = preparedLink
+					}
+					
 					break
 				}
 			case "name":
@@ -63,10 +67,14 @@ func (p *StandardLinkPreview) readTags() error {
 		for _, attr := range node.Attr {
 			switch strings.ToLower(attr.Key) {
 			case "rel":
-				if attr.Val != "icon" && attr.Val != "apple-touch-icon-precomposed" {
+				if !strings.Contains(attr.Val, "icon") && attr.Val != "apple-touch-icon-precomposed" {
 					break
 				}
-				p.parseFavicon(node)
+				status := p.parseFavicon(node)
+				if status {
+					break
+				}
+				// need to break after success
 			default:
 				continue
 			}
@@ -110,7 +118,9 @@ func (p *StandardLinkPreview) parseMetaProperties(nodeType string, node *html.No
 	case "description":
 		p.Description = content
 	case "image":
-		p.ImageURL = p.prepareLink(content)
+		if preparedLink := p.prepareLink(content); "" != preparedLink && p.checkAccessToLink(preparedLink) {
+			p.ImageURL = preparedLink
+		}
 	case "title":
 		p.Title = content
 	}

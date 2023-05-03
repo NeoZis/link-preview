@@ -2,11 +2,12 @@ package handlers
 
 import (
 	"errors"
-	"github.com/PuerkitoBio/goquery"
-	"golang.org/x/net/html"
 	"net/http"
 	"net/url"
 	"strings"
+
+	"github.com/PuerkitoBio/goquery"
+	"golang.org/x/net/html"
 )
 
 const (
@@ -67,6 +68,17 @@ func (p *LinkPreviewContext) initClient() {
 	p.Client = client
 }
 
+func (p *LinkPreviewContext) checkAccessToLink(link string) bool {
+	client, _ := http.NewRequest("GET", link, nil)
+	res, err := http.DefaultClient.Do(client)
+	if nil != err || res.StatusCode != 200 {
+		return false
+	}
+	defer res.Body.Close()
+
+	return true
+}
+
 func (p *LinkPreviewContext) request() error {
 	res, err := http.DefaultClient.Do(p.Client)
 	if nil != err {
@@ -83,7 +95,7 @@ func (p *LinkPreviewContext) request() error {
 	return nil
 }
 
-func (p *LinkPreviewContext) parseFavicon(node *html.Node) {
+func (p *LinkPreviewContext) parseFavicon(node *html.Node) bool {
 	var link string
 
 	for _, attr := range node.Attr {
@@ -97,12 +109,18 @@ func (p *LinkPreviewContext) parseFavicon(node *html.Node) {
 	}
 
 	if "" == link {
-		return
+		return false
 	}
 
 	if "" == p.ImageURL {
-		p.ImageURL = p.prepareLink(link)
+		if preparedLink := p.prepareLink(link); "" != preparedLink && p.checkAccessToLink(preparedLink) {
+			p.ImageURL = preparedLink
+
+			return true
+		}
 	}
+
+	return false
 }
 
 func (p *LinkPreviewContext) prepareLink(link string) string {
