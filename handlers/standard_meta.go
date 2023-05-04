@@ -46,7 +46,7 @@ func (p *StandardLinkPreview) readTags() error {
 					if preparedLink := p.prepareLink(content); "" != preparedLink && p.checkAccessToLink(preparedLink) {
 						p.ImageURL = preparedLink
 					}
-					
+
 					break
 				}
 			case "name":
@@ -67,7 +67,7 @@ func (p *StandardLinkPreview) readTags() error {
 		for _, attr := range node.Attr {
 			switch strings.ToLower(attr.Key) {
 			case "rel":
-				if !strings.Contains(attr.Val, "icon") && attr.Val != "apple-touch-icon-precomposed" {
+				if (!strings.Contains(attr.Val, "icon") || attr.Val == "mask-icon") && attr.Val != "apple-touch-icon-precomposed" {
 					break
 				}
 				status := p.parseFavicon(node)
