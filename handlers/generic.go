@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"errors"
+	"golang.org/x/net/html/charset"
 	"net/http"
 	"net/url"
 	"strings"
@@ -86,7 +87,13 @@ func (p *LinkPreviewContext) request() error {
 	}
 	defer res.Body.Close()
 
-	doc, err := goquery.NewDocumentFromReader(res.Body)
+	ct := res.Header.Get("Content-Type")
+	bodyReader, err := charset.NewReader(res.Body, ct)
+	if err != nil {
+		return err
+	}
+
+	doc, err := goquery.NewDocumentFromReader(bodyReader)
 	if nil != err {
 		return err
 	}
