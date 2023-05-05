@@ -1,9 +1,21 @@
-package LinkPreview
+package main
 
 import (
-	"github.com/NeoZis/link-preview/handlers"
+	"fmt"
 	"net/http"
+
+	"github.com/NeoZis/link-preview/handlers"
 )
+
+func main() {
+	data, err := Preview("https://youtrack.jcdev.net/issue/RL-99/Backoffice-Company-members-page-doesnt-reload-after-deleting-a-company-member-with-2FA", nil)
+
+	if nil != err {
+		panic(err)
+	}
+
+	fmt.Println(data.ImageURL)
+}
 
 func Preview(link string, extraContent *http.Request) (*handlers.LinkPreviewContext, error) {
 	return PreviewLink(link, extraContent)

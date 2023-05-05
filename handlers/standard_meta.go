@@ -2,6 +2,8 @@ package handlers
 
 import (
 	"errors"
+	"fmt"
+	"strconv"
 	"strings"
 
 	"golang.org/x/net/html"
@@ -63,22 +65,57 @@ func (p *StandardLinkPreview) readTags() error {
 
 	// Find `favicon.ico`.
 	linkNodes := p.Parsed.Find("html > head > link")
+	var (
+		faviconNode *html.Node
+		biggestIconSize string
+		biggestIconSizeInt int
+	)
+
+	for i := range linkNodes.Nodes {
+		for j := range linkNodes.Nodes[i].Attr {
+			if linkNodes.Nodes[i].Attr[j].Key == "sizes" {
+				slices := strings.Split(linkNodes.Nodes[i].Attr[j].Val, "x")
+
+				if 2 == len(slices) {
+					size, err := strconv.Atoi(slices[0])
+
+					if nil == err && size > biggestIconSizeInt {
+						biggestIconSize = linkNodes.Nodes[i].Attr[j].Val
+						fmt.Println(biggestIconSize)
+					}
+				}
+			}
+		}
+	}
+
 	for _, node := range linkNodes.Nodes {
 		for _, attr := range node.Attr {
 			switch strings.ToLower(attr.Key) {
 			case "rel":
-				if (!strings.Contains(attr.Val, "icon") || attr.Val == "mask-icon") && attr.Val != "apple-touch-icon-precomposed" {
+				if 
+					(!strings.Contains(attr.Val, "icon") || 
+					attr.Val == "mask-icon") && 
+					attr.Val != "apple-touch-icon-precomposed" &&
+					attr.Val != "apple-touch-icon" {
 					break
 				}
+				if (attr.Val != "apple-touch-icon-precomposed" && attr.Val != "apple-touch-icon") {
+					faviconNode = node
+					continue
+				}
+				
 				status := p.parseFavicon(node)
 				if status {
-					break
+					return nil
 				}
 				// need to break after success
 			default:
 				continue
 			}
 		}
+	}
+	if faviconNode != nil {
+		p.parseFavicon(faviconNode)
 	}
 
 	return nil
