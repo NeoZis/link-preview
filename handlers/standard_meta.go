@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"errors"
-	"fmt"
 	"strconv"
 	"strings"
 
@@ -66,11 +65,11 @@ func (p *StandardLinkPreview) readTags() error {
 	// Find `favicon.ico`.
 	linkNodes := p.Parsed.Find("html > head > link")
 	var (
-		faviconNode *html.Node
-		biggestIconSize string
+		faviconNode        *html.Node
 		biggestIconSizeInt int
 	)
 
+	// Find the biggest size of image
 	for i := range linkNodes.Nodes {
 		for j := range linkNodes.Nodes[i].Attr {
 			if linkNodes.Nodes[i].Attr[j].Key == "sizes" {
@@ -80,30 +79,37 @@ func (p *StandardLinkPreview) readTags() error {
 					size, err := strconv.Atoi(slices[0])
 
 					if nil == err && size > biggestIconSizeInt {
-						biggestIconSize = linkNodes.Nodes[i].Attr[j].Val
-						fmt.Println(biggestIconSize)
+						faviconNode = linkNodes.Nodes[i]
+						biggestIconSizeInt = size
 					}
 				}
 			}
 		}
 	}
 
+	if biggestIconSizeInt > 0 {
+		status := p.parseFavicon(faviconNode)
+		if status {
+			return nil
+		}
+	}
+
 	for _, node := range linkNodes.Nodes {
 		for _, attr := range node.Attr {
 			switch strings.ToLower(attr.Key) {
+
 			case "rel":
-				if 
-					(!strings.Contains(attr.Val, "icon") || 
-					attr.Val == "mask-icon") && 
+				if (!strings.Contains(attr.Val, "icon") ||
+					attr.Val == "mask-icon") &&
 					attr.Val != "apple-touch-icon-precomposed" &&
 					attr.Val != "apple-touch-icon" {
 					break
 				}
-				if (attr.Val != "apple-touch-icon-precomposed" && attr.Val != "apple-touch-icon") {
+				if attr.Val != "apple-touch-icon-precomposed" && attr.Val != "apple-touch-icon" {
 					faviconNode = node
 					continue
 				}
-				
+
 				status := p.parseFavicon(node)
 				if status {
 					return nil
