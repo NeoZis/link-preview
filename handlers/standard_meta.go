@@ -165,6 +165,8 @@ func (p *StandardLinkPreview) parseMetaProperties(nodeType string, node *html.No
 			p.ImageURL = preparedLink
 		}
 	case "title":
-		p.Title = content
+		if p.Title == "" {
+			p.Title = content
+		}
 	}
 }
